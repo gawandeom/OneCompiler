@@ -1,6 +1,3 @@
-
-
-
 import express, { urlencoded } from "express";
 import "dotenv/config";
 import { prisma } from "./db";
@@ -27,15 +24,27 @@ app.use(
 app.use(cookieParser());
 
 app.get("/health", async (req, res) => {
-  const users = await prisma.user.findMany();
-  console.log(users);
-  res.send(`user: ${users}`);
+ 
 });
 
 app.post("/execute", async (req, res) => {
   const { code, lang } = req.body;
+
   try {
-    await client.lPush("problems", JSON.stringify({ code, lang }));
+    
+
+    const response = await prisma.sumission.create({
+      data: {
+        code,
+        lang,
+        status: "processing",
+        output:""
+      },
+    });
+
+    
+
+    await client.lPush("problems", JSON.stringify({id:response.id ,code, lang }));
     res.status(200).send("Submission received and stored.");
   } catch (error) {
     console.log("Error in executing code", error);
