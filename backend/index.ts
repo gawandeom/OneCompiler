@@ -45,12 +45,29 @@ app.post("/execute", async (req, res) => {
     
 
     await client.lPush("problems", JSON.stringify({id:response.id ,code, lang }));
-    res.status(200).send("Submission received and stored.");
+    res.status(200).send(`Submission Id : ${response.id}` );
   } catch (error) {
     console.log("Error in executing code", error);
     res.status(400).send("Error in executing code .");
   }
 });
+
+
+
+app.get("/submission/:sumissionId", async(req,res)=>{
+        const id = req.params.sumissionId
+
+      const respose = await prisma.sumission.findFirst({where:{id}})
+
+      res.status(200).json({
+        result:respose
+      })
+
+})
+
+
+
+
 
 async function startServer() {
   try {

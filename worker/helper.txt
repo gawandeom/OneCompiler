@@ -1,0 +1,128 @@
+import { createClient } from "redis";
+import { spawn } from "node:child_process";
+import fs from "fs";
+import { prisma } from "./db.ts";
+
+const client = createClient();
+
+client.on("error", (err) => {
+  console.log("Redis connection error", err);
+});
+
+// ---------- 1. Settings for each language ----------
+// To add a new language, just add one line here.
+const LANGUAGE_CONFIG = {
+  js: { file: "a.js", command: "node" },
+  python: { file: "a.py", command: "python3" },
+};
+
+// ---------- 2. Function: run the code and get output ----------
+function runCode(lang, code) {
+  return new Promise((resolvePromise) => {
+    const config = LANGUAGE_CONFIG[lang];
+
+    if (!config) {
+      // Unknown language -> don't crash, just return an error result
+      resolvePromise({
+        success: false,
+        output: "",
+        error: `Unsupported language: ${lang}`,
+      });
+      return;
+    }
+
+    const filepath = __dirname + "/code/" + config.file;
+    fs.writeFileSync(filepath, code);
+
+    const child = spawn(config.command, [filepath]);
+
+    let output = "";
+    let error = "";
+
+    child.stdout.on("data", (chunk) => {
+      output += chunk.toString();
+    });
+
+    // FIX: this was "error" event before (wrong), should be "data"
+    child.stderr.on("data", (chunk) => {
+      error += chunk.toString();
+    });
+
+    // Safety net: if node itself fails to start (e.g. bad path), don't hang forever
+    child.on("error", (err) => {
+      resolvePromise({ success: false, output, error: err.message });
+    });
+
+    // Safety net: kill the process if it runs longer than 10 seconds
+    const timeout = setTimeout(() => {
+      child.kill("SIGKILL");
+    }, 10_000);
+
+    child.on("exit", (exitCode) => {
+      clearTimeout(timeout);
+      resolvePromise({
+        success: exitCode === 0,
+        output,
+        error,
+      });
+    });
+  });
+}
+
+// ---------- 3. Function: save the result to the database ----------
+async function saveResult(id, result) {
+  try {
+    await prisma.submission.update({
+      where: { id },
+      data: {
+        status: result.success ? "success" : "failure",
+        error: result.error || null, // FIX: was the string "null" before, now real null
+        output: result.output,
+      },
+    });
+  } catch (err) {
+    console.log(`Failed to save result for submission ${id}:`, err);
+  }
+}
+
+// ---------- 4. Function: process one job from the queue ----------
+async function processJob(rawJob) {
+  const { id, code, lang } = JSON.parse(rawJob);
+
+  const result = await runCode(lang, code);
+  await saveResult(id, result);
+
+  console.log(`Job ${id} finished:`, result.success ? "success" : "failure");
+}
+
+// ---------- 5. Main loop: keep checking the queue ----------
+async function executor() {
+  while (true) {
+    const rawJob = await client.rPop("problems");
+
+    if (!rawJob) {
+      await new Promise((r) => setTimeout(r, 1000));
+      continue;
+    }
+
+    // try/catch so one bad job can't crash the whole worker
+    try {
+      await processJob(rawJob);
+    } catch (err) {
+      console.log("Error processing job:", err);
+    }
+  }
+}
+
+// ---------- 6. Start everything ----------
+async function startWorker() {
+  try {
+    await client.connect();
+    console.log("Worker connected to Redis");
+    executor();
+  } catch (error) {
+    console.log(`Error connecting to Redis: ${error}`);
+  }
+}
+
+startWorker();
