@@ -4,7 +4,7 @@ import { Moon, Sun } from "lucide-react";
 type NavBarProps = {
   theme: "light" | "dark";
   onToggleTheme: () => void;
-  onRun: () => void;
+  onRun: () => void
  
 };
 
