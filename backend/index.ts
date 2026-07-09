@@ -3,6 +3,7 @@ import "dotenv/config";
 import { prisma } from "./db";
 import cookieParser from "cookie-parser";
 import { createClient } from "redis";
+import cors from "cors"
 
 const app = express();
 
@@ -20,6 +21,8 @@ app.use(
     extended: true,
   }),
 );
+
+app.use(cors())
 
 app.use(cookieParser());
 
@@ -45,7 +48,7 @@ app.post("/execute", async (req, res) => {
     
 
     await client.lPush("problems", JSON.stringify({id:response.id ,code, lang }));
-    res.status(200).send(`Submission Id : ${response.id}` );
+    res.status(200).json({submissionId:response.id} );
   } catch (error) {
     console.log("Error in executing code", error);
     res.status(400).send("Error in executing code .");
