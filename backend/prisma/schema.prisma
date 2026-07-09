@@ -7,7 +7,7 @@ datasource db {
   provider = "postgresql"
 }
 
-model Sumission {
+model Submission {
   id     String @id @default(uuid())
   code   String
   lang   String

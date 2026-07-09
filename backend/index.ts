@@ -33,7 +33,7 @@ app.post("/execute", async (req, res) => {
   try {
     
 
-    const response = await prisma.sumission.create({
+    const response = await prisma.submission.create({
       data: {
         code,
         lang,
@@ -57,7 +57,7 @@ app.post("/execute", async (req, res) => {
 app.get("/submission/:sumissionId", async(req,res)=>{
         const id = req.params.sumissionId
 
-      const respose = await prisma.sumission.findFirst({where:{id}})
+      const respose = await prisma.submission.findFirst({where:{id}})
 
       res.status(200).json({
         result:respose
@@ -71,7 +71,7 @@ app.get("/submission/:sumissionId", async(req,res)=>{
 
 async function startServer() {
   try {
-    const PORT = process.env.PORT || 3000;
+    const PORT = process.env.PORT || 5000;
 
     await client.connect();
     console.log("Connected to Redis");
