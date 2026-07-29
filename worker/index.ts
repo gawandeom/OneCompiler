@@ -2,7 +2,7 @@ import { createClient } from "redis";
 import { spawn } from "node:child_process";
 import fs from "fs";
 import { prisma } from "./db.ts";
-
+import path from "path";
 
 const client = createClient();
 
@@ -11,15 +11,19 @@ client.on("error", (err) => {
 });
 
 const CONCURRENCY = 5
-const LANG_CONFIG: Record<"js" | "py", { file: string; command: string }> = {
+const PYTHON_COMMAND = process.platform === "win32" ? "py" : "python3";
+
+const LANG_CONFIG: Record<"js" | "py", { file: string; command: string ,image: string} > = {
   js: {
     file: "a.js",
     command: "node",
+    image: "node:20-slim",
   },
 
   py: {
     file: "a.py",
     command: "python3",
+    image: "python:3.11-slim"
   },
 };
 
@@ -35,10 +39,24 @@ const runCode = (code: string, lang: keyof typeof LANG_CONFIG) => {
       });
       return;
     }
-
-    const filepath = __dirname + "/code/" + config.file;
+    const codeDir = path.join(__dirname + "/code")
+    fs.mkdirSync(codeDir, { recursive: true });
+    const filepath = path.join(codeDir+ "/" + config.file);
     fs.writeFileSync(filepath, code);
-    const CompilerResponse = spawn(config.command, [filepath]);
+
+    const dockerArgs = [
+      "run",
+      "--rm",                              // auto-remove the container when it exits
+      "--network", "none",                 // no internet access from inside
+      "--memory", "100m",                  // hard memory cap
+      "--cpus", "0.5",                     // hard CPU cap
+      "-v", `${codeDir}:/app`,             // mount the WHOLE code folder, not just one file
+      config.image,                        // e.g. python:3.11-slim
+      config.command,                      // e.g. python3
+      `/app/${config.file}`,               // the path INSIDE the container
+    ];
+
+    const CompilerResponse = spawn("docker", dockerArgs);
 
     let output = "";
     let error = "";
@@ -98,7 +116,7 @@ async function workerLoop() {
     const { id, code, lang } = JSON.parse(response.element);
     try {
       const data = await runCode(code, lang);
-        await dbFunction(id, data?);
+        await dbFunction(id, data)
     } catch (err) {
       console.error(`Job ${id} failed:`, err);
         await dbFunction(id, {

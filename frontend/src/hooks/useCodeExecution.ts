@@ -6,14 +6,14 @@ export default function useCodeExecution (){
   const [output, setOutput] = useState("");
   const [isRunning, setIsRunning] = useState(false);
 
-  const runCode = useCallback(async (code:string) => {
+  const runCode = useCallback(async (code:string,language:string) => {
     setIsRunning(true);
     setOutput("Processing");
 
     try {
       const response = await axios.post("http://localhost:5000/execute", {
         code,
-        lang: "js",
+        lang:language,
       });
       setSubmissionId(response.data.submissionId);
     } catch (error) {

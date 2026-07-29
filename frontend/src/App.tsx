@@ -17,7 +17,7 @@ export function App() {
       <NavBar
         theme={theme}
         onToggleTheme={toggleTheme}
-        onRun={() => runCode(code)}
+        onRun={(language) => runCode(code,language)}
       />
       <div className=" flex h-screen w-full">
         <div className="flex-1 border border-border rounded-md m-5 h-5/6">
