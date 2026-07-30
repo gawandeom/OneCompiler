@@ -3,6 +3,9 @@ import { spawn } from "node:child_process";
 import fs from "fs";
 import { prisma } from "./db.ts";
 import path from "path";
+import { fileURLToPath } from "node:url";
+
+const workerDir = path.dirname(fileURLToPath(import.meta.url));
 
 const client = createClient();
 
@@ -10,10 +13,13 @@ client.on("error", (err) => {
   console.log("Redis connection error");
 });
 
-const CONCURRENCY = 5
+const CONCURRENCY = 5;
 const PYTHON_COMMAND = process.platform === "win32" ? "py" : "python3";
 
-const LANG_CONFIG: Record<"js" | "py", { file: string; command: string ,image: string} > = {
+const LANG_CONFIG: Record<
+  "js" | "py",
+  { file: string; command: string; image: string }
+> = {
   js: {
     file: "a.js",
     command: "node",
@@ -23,11 +29,11 @@ const LANG_CONFIG: Record<"js" | "py", { file: string; command: string ,image: s
   py: {
     file: "a.py",
     command: "python3",
-    image: "python:3.11-slim"
+    image: "python:3.11-slim",
   },
 };
 
-const runCode = (code: string, lang: keyof typeof LANG_CONFIG) => {
+const runCode = (code: string, lang: keyof typeof LANG_CONFIG, id: string) => {
   return new Promise((resolvePromise) => {
     let config = LANG_CONFIG[lang];
 
@@ -39,21 +45,27 @@ const runCode = (code: string, lang: keyof typeof LANG_CONFIG) => {
       });
       return;
     }
-    const codeDir = path.join(__dirname + "/code")
+    const uniqueFileName = `${id}.${lang}`;
+    const codeDir = path.join(workerDir, "code");
     fs.mkdirSync(codeDir, { recursive: true });
-    const filepath = path.join(codeDir+ "/" + config.file);
+    const filepath = path.join(codeDir, uniqueFileName);
+  
     fs.writeFileSync(filepath, code);
 
     const dockerArgs = [
       "run",
-      "--rm",                              // auto-remove the container when it exits
-      "--network", "none",                 // no internet access from inside
-      "--memory", "100m",                  // hard memory cap
-      "--cpus", "0.5",                     // hard CPU cap
-      "-v", `${codeDir}:/app`,             // mount the WHOLE code folder, not just one file
-      config.image,                        // e.g. python:3.11-slim
-      config.command,                      // e.g. python3
-      `/app/${config.file}`,               // the path INSIDE the container
+      "--rm", // auto-remove the container when it exits
+      "--network",
+      "none", // no internet access from inside
+      "--memory",
+      "100m", // hard memory cap
+      "--cpus",
+      "0.5", // hard CPU cap
+      "-v",
+      `${codeDir}:/app`, // mount the WHOLE code folder, not just one file
+      config.image, // e.g. python:3.11-slim
+      config.command, // e.g. python3
+      `/app/${uniqueFileName}`, // the path INSIDE the container
     ];
 
     const CompilerResponse = spawn("docker", dockerArgs);
@@ -82,6 +94,9 @@ const runCode = (code: string, lang: keyof typeof LANG_CONFIG) => {
 
     CompilerResponse.on("exit", (exitcode) => {
       clearTimeout(timeout);
+
+      fs.unlinkSync(filepath);
+
       resolvePromise({
         success: exitcode === 0,
         output,
@@ -91,12 +106,11 @@ const runCode = (code: string, lang: keyof typeof LANG_CONFIG) => {
   });
 };
 
-
 type dbResponse = {
-  success: boolean,
-  error: string,
-  output: string,
-}
+  success: boolean;
+  error: string;
+  output: string;
+};
 
 const dbFunction = async (id: string, data: dbResponse) => {
   const dbRes = await prisma.submission.update({
@@ -107,7 +121,7 @@ const dbFunction = async (id: string, data: dbResponse) => {
       output: data.output,
     },
   });
-}
+};
 
 async function workerLoop() {
   while (true) {
@@ -115,15 +129,15 @@ async function workerLoop() {
     if (!response) continue;
     const { id, code, lang } = JSON.parse(response.element);
     try {
-      const data = await runCode(code, lang);
-        await dbFunction(id, data)
+      const data = await runCode(code, lang,id);
+      await dbFunction(id, data);
     } catch (err) {
       console.error(`Job ${id} failed:`, err);
-        await dbFunction(id, {
-          success: false,
-          error: err instanceof Error ? err.message : String(err),
-          output: "",
-        });
+      await dbFunction(id, {
+        success: false,
+        error: err instanceof Error ? err.message : String(err),
+        output: "",
+      });
     }
   }
 }
@@ -134,4 +148,4 @@ async function startWorker() {
   await Promise.all(Array.from({ length: CONCURRENCY }, workerLoop));
 }
 
-startWorker()
+startWorker();
