@@ -1,9 +1,9 @@
 import express, { urlencoded } from "express";
 import "dotenv/config";
-import { prisma } from "./db";
+import { prisma } from "@onecompiler/db";
 import cookieParser from "cookie-parser";
 import { createClient } from "redis";
-import cors from "cors"
+import cors from "cors";
 
 const app = express();
 

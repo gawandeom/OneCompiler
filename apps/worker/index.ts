@@ -1,7 +1,7 @@
 import { createClient } from "redis";
 import { spawn } from "node:child_process";
 import fs from "fs";
-import { prisma } from "./db.ts";
+import { prisma } from "@onecompiler/db";
 import path from "path";
 import { fileURLToPath } from "node:url";
 

@@ -1,7 +1,7 @@
 // test-push.ts
 import { createClient } from "redis";
 import { randomUUID } from "node:crypto";
-import { prisma } from "./db.js";
+import { prisma } from "@onecompiler/db";
 
 const client = createClient();
 

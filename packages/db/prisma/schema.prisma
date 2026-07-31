@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client"
-  output   = "../generated/prisma"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -13,7 +13,7 @@ model Submission {
   lang   String
   status Status @default(processing)
   output String @default("")
-  error  String? 
+  error  String?
 }
 
 enum Status {

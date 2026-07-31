@@ -2,11 +2,15 @@
   "name": "test",
   "private": true,
   "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev",
+    "build": "bun run db:generate && turbo run build",
+    "dev": "bun run db:generate && turbo run dev",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "check-types": "turbo run check-types"
+    "check-types": "bun run db:generate && turbo run check-types",
+    "db:generate": "bun run --cwd packages/db generate",
+    "db:migrate": "bun run --cwd packages/db migrate:dev",
+    "db:deploy": "bun run --cwd packages/db migrate:deploy",
+    "db:studio": "bun run --cwd packages/db studio"
   },
   "devDependencies": {
     "prettier": "^3.7.4",
@@ -25,5 +29,8 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "dependencies": {
+    "@types/redis": "^4.0.11"
+  }
 }
