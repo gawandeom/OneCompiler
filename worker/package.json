@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "tsx index.ts"
+    "dev": "nodemon --exec tsx index.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",
@@ -19,6 +19,7 @@
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "dotenv": "^17.4.2",
+    "nodemon": "^3.1.14",
     "pg": "^8.22.0",
     "redis": "^6.1.0"
   }

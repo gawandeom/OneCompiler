@@ -49,12 +49,16 @@ const runCode = (code: string, lang: keyof typeof LANG_CONFIG, id: string) => {
     const codeDir = path.join(workerDir, "code");
     fs.mkdirSync(codeDir, { recursive: true });
     const filepath = path.join(codeDir, uniqueFileName);
-  
+
+    const containerName = `sandbox-${id}`;
+
     fs.writeFileSync(filepath, code);
 
     const dockerArgs = [
       "run",
       "--rm", // auto-remove the container when it exits
+      "--name",
+      containerName,
       "--network",
       "none", // no internet access from inside
       "--memory",
@@ -90,8 +94,18 @@ const runCode = (code: string, lang: keyof typeof LANG_CONFIG, id: string) => {
 
     const timeout = setTimeout(() => {
       CompilerResponse.kill("SIGKILL");
+
+      spawn("docker", ["kill", containerName]);
     }, 10000);
 
+      CompilerResponse.on("error", (error) => {
+      resolvePromise({
+        success: false,
+        output,
+        error: error.message,
+      });
+    });
+    
     CompilerResponse.on("exit", (exitcode) => {
       clearTimeout(timeout);
 
@@ -127,17 +141,23 @@ async function workerLoop() {
   while (true) {
     const response = await client.blPop("problems", 0);
     if (!response) continue;
+
     const { id, code, lang } = JSON.parse(response.element);
     try {
-      const data = await runCode(code, lang,id);
+      const data = await runCode(code, lang, id);
       await dbFunction(id, data);
     } catch (err) {
       console.error(`Job ${id} failed:`, err);
-      await dbFunction(id, {
-        success: false,
-        error: err instanceof Error ? err.message : String(err),
-        output: "",
-      });
+
+      try {
+        await dbFunction(id, {
+          success: false,
+          error: err instanceof Error ? err.message : String(err),
+          output: "",
+        });
+      } catch (error) {
+        console.error(`Job ${id} failed TO Save in DB :`, err);
+      }
     }
   }
 }
