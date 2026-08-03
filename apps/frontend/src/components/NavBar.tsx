@@ -8,18 +8,21 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useState } from "react";
 import jssvg from "../../styles/javascript-logo-svgrepo-com.svg"
+import pysvg from "../../styles/python-logo-svgrepo-com.svg"
+import cppsvg from "../../styles/cpp-logo-svgrepo-com.svg"
+
+
+
 type NavBarProps = {
   theme: "light" | "dark";
   onToggleTheme: () => void;
-  // onRun now receives the selected language
-  onRun: (language: "js" | "py" | "cpp") => void;
+  language: "js" | "py" | "cpp";
+  onLanguageChange: (language: "js" | "py" | "cpp") => void;
+  onRun: () => void;
 };
 
-function NavBar({ theme, onToggleTheme, onRun }: NavBarProps) {
-  const [language, setLanguage] = useState<"js" | "py" | "cpp">("js");
-  
+function NavBar({ theme, onToggleTheme, language, onLanguageChange, onRun }: NavBarProps) {
   return (
     <div className="flex h-20 w-full items-center justify-between border-b border-border bg-background/95 px-6">
       <div>
@@ -35,23 +38,30 @@ function NavBar({ theme, onToggleTheme, onRun }: NavBarProps) {
             <DropdownMenuGroup>
               <DropdownMenuCheckboxItem
                 checked={language === "js"}
-                onCheckedChange={(checked) => checked && setLanguage("js")}
+                onCheckedChange={(checked) => checked && onLanguageChange("js")}
               >
                 <img src={jssvg} alt="JavaScript" className="inline h-4 w-4 mr-2" />
                 JavaScript
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
                 checked={language === "py"}
-                onCheckedChange={(checked) => checked && setLanguage("py")}
+                onCheckedChange={(checked) => checked && onLanguageChange("py")}
               >
-                
+                <img src={pysvg} alt="Python" className="inline h-4 w-4 mr-2" />
                 Python
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={language === "cpp"}
+                onCheckedChange={(checked) => checked && onLanguageChange("cpp")}
+              >
+                <img src={cppsvg} alt="C++" className="inline h-4 w-4 mr-2" />
+                C++
               </DropdownMenuCheckboxItem>
             </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
         
-        <Button onClick={() => onRun(language)}>Run</Button>
+        <Button onClick={onRun}>Run</Button>
       </div>
       <div className="flex gap-3">
         <Button variant="outline" onClick={onToggleTheme}>

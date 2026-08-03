@@ -4,12 +4,18 @@ import NavBar from "./components/NavBar";
 import { Editor } from "@monaco-editor/react";
 import useTheme from "./hooks/useTheme";
 import useCodeExecution from "./hooks/useCodeExecution";
+type ExecutionLanguage = "js" | "py" | "cpp";
 
-
+const monacoLanguageByExecutionLanguage: Record<ExecutionLanguage, string> = {
+  js: "javascript",
+  py: "python",
+  cpp: "cpp",
+};
 
 export function App() {
   const { theme, toggleTheme } = useTheme();
   const [code, setCode] = useState("console.log('hello')");
+  const [language, setLanguage] = useState<ExecutionLanguage>("js");
   const { output, runCode, isRunning } = useCodeExecution();
 
   return (
@@ -17,14 +23,15 @@ export function App() {
       <NavBar
         theme={theme}
         onToggleTheme={toggleTheme}
-        onRun={(language) => runCode(code,language)}
+        language={language}
+        onLanguageChange={setLanguage}
+        onRun={() => runCode(code, language)}
       />
       <div className=" flex h-screen w-full">
         <div className="flex-1 border border-border rounded-md m-5 h-5/6">
           <Editor
             height="100%"
-            defaultLanguage="javascript"
-            language="javascript"
+            language={monacoLanguageByExecutionLanguage[language]}
             value={code}
             onChange={(value) => setCode(value ?? "")}
             theme={theme === "dark" ? "vs-dark" : "vs-light"}
