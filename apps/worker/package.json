@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "nodemon --exec tsx index.ts",
+    "dev": "nodemon --exec tsx src/index.ts",
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
