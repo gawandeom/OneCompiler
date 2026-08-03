@@ -1,11 +1,8 @@
-
-
 import path from "path";
 import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
 import fs from "fs";
 import { LANG_CONFIG } from "../config/languages";
-
 
 const workerDir = path.dirname(fileURLToPath(import.meta.url));
 
@@ -21,15 +18,25 @@ const runCode = (code: string, lang: keyof typeof LANG_CONFIG, id: string) => {
       });
       return;
     }
-    const uniqueFileName = `${id}.${lang}`;
-    const codeDir = path.join(workerDir, "code");
-    fs.mkdirSync(codeDir, { recursive: true });
-    const filepath = path.join(codeDir, uniqueFileName);
+    
+    const jobDir = path.join(workerDir, "code",id);
+    fs.mkdirSync(jobDir, { recursive: true });
+    const filepath = path.join(jobDir, config.file);
 
     const containerName = `sandbox-${id}`;
 
     fs.writeFileSync(filepath, code);
 
+let containerCmd: string[]
+
+if(config.compile_cmd){
+    const fullCmd = `g++ ${config.file} -o main 2>compile_error.txt || (cat compile_error.txt && exit 99) && ${config.run_cmd}`;
+      containerCmd = ["bash", "-c", fullCmd];
+}
+else {
+      // interpreted language: just run directly
+      containerCmd = [config.run_cmd as string, `/app/${config.file}`];
+    }
     const dockerArgs = [
       "run",
       "--rm", // auto-remove the container when it exits
@@ -42,10 +49,11 @@ const runCode = (code: string, lang: keyof typeof LANG_CONFIG, id: string) => {
       "--cpus",
       "0.5", // hard CPU cap
       "-v",
-      `${codeDir}:/app`, // mount the WHOLE code folder, not just one file
+      `${jobDir}:/app`, // mount the WHOLE code folder, not just one file
+      "-w",
+        "/app",
       config.image, // e.g. python:3.11-slim
-      config.command, // e.g. python3
-      `/app/${uniqueFileName}`, // the path INSIDE the container
+      ...containerCmd
     ];
 
     const CompilerResponse = spawn("docker", dockerArgs);
@@ -74,26 +82,37 @@ const runCode = (code: string, lang: keyof typeof LANG_CONFIG, id: string) => {
       spawn("docker", ["kill", containerName]);
     }, 10000);
 
-      CompilerResponse.on("error", (error) => {
+    CompilerResponse.on("error", (error) => {
       resolvePromise({
         success: false,
         output,
         error: error.message,
       });
     });
-    
+
     CompilerResponse.on("exit", (exitcode) => {
       clearTimeout(timeout);
 
-      fs.unlinkSync(filepath);
+       fs.rmSync(jobDir, { recursive: true, force: true });
 
-      resolvePromise({
+        if(exitcode === 99){
+             resolvePromise({
+        success: false,
+        output:"",
+        error:output,
+      });
+        }else{
+            
+        resolvePromise({
         success: exitcode === 0,
         output,
         error,
       });
+    }
+      
     });
   });
 };
 
-export default runCode
+export default runCode;
+
