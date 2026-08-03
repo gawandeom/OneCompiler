@@ -15,6 +15,7 @@ import cppsvg from "../../styles/cpp-logo-svgrepo-com.svg"
 
 
 type NavBarProps = {
+  
   theme: "light" | "dark";
   onToggleTheme: () => void;
   language: "js" | "py" | "cpp";
