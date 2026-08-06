@@ -18,8 +18,8 @@ type NavBarProps = {
   
   theme: "light" | "dark";
   onToggleTheme: () => void;
-  language: "js" | "py" | "cpp";
-  onLanguageChange: (language: "js" | "py" | "cpp") => void;
+  language: "js" | "py" | "cpp"|"java";
+  onLanguageChange: (language: "js" | "py" | "cpp"|"java") => void;
   onRun: () => void;
 };
 
@@ -57,6 +57,13 @@ function NavBar({ theme, onToggleTheme, language, onLanguageChange, onRun }: Nav
               >
                 <img src={cppsvg} alt="C++" className="inline h-4 w-4 mr-2" />
                 C++
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={language === "java"}
+                onCheckedChange={(checked) => checked && onLanguageChange("java")}
+              >
+                <img src={cppsvg} alt="java" className="inline h-4 w-4 mr-2" />
+                Java
               </DropdownMenuCheckboxItem>
             </DropdownMenuGroup>
           </DropdownMenuContent>

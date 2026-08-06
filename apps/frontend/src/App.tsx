@@ -4,12 +4,13 @@ import NavBar from "./components/NavBar";
 import { Editor } from "@monaco-editor/react";
 import useTheme from "./hooks/useTheme";
 import useCodeExecution from "./hooks/useCodeExecution";
-type ExecutionLanguage = "js" | "py" | "cpp";
+type ExecutionLanguage = "js" | "py" | "cpp"|"java";
 
 const monacoLanguageByExecutionLanguage: Record<ExecutionLanguage, string> = {
   js: "javascript",
   py: "python",
   cpp: "cpp",
+  java:"java"
 };
 
 export function App() {
