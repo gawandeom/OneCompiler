@@ -34,7 +34,7 @@ export const LANG_CONFIG: Record<LanguageKey, LanguageConfig> = {
     fileExtension: "java",
     compile_cmd: (file) => `javac ${file}`,
     // Java class name must match filename — usually you name the file Main.java
-    run_cmd: (file) => `java Main}`,
+    run_cmd: (file) => `java Main`,
     image:"eclipse-temurin:21-jdk"
   },
 };
