@@ -9,6 +9,7 @@ const workerDir = path.dirname(fileURLToPath(import.meta.url));
 const runCode = (code: string, lang: keyof typeof LANG_CONFIG, id: string) => {
   return new Promise((resolvePromise) => {
     let config = LANG_CONFIG[lang];
+    console.log(config)
 
     if (!config) {
       resolvePromise({
@@ -30,13 +31,15 @@ const runCode = (code: string, lang: keyof typeof LANG_CONFIG, id: string) => {
 let containerCmd: string[]
 
 if(config.compile_cmd){
-    const fullCmd = `g++ ${config.file} -o main 2>compile_error.txt || (cat compile_error.txt && exit 99) && ${config.run_cmd}`;
+  const compilePart = config.compile_cmd(config.file);
+  const runPart = config.run_cmd(config.file);
+    const fullCmd = `${compilePart} 2>compile_error.txt || (cat compile_error.txt && exit 99) && ${runPart}`;
       containerCmd = ["bash", "-c", fullCmd];
 }
 else {
       // interpreted language: just run directly
-      containerCmd = [config.run_cmd as string, `/app/${config.file}`];
-    }
+      // containerCmd = [config.run_cmd, `/app/${config.file}`];
+containerCmd = ["bash", "-c", config.run_cmd(config.file)];    }
     const dockerArgs = [
       "run",
       "--rm", // auto-remove the container when it exits
@@ -116,3 +119,11 @@ else {
 
 export default runCode;
 
+// function buildContainerCmd(lang:string,filePath:string){
+// let config = LANG_CONFIG[lang];
+//     console.log(config)
+
+//     if (!config) throw new Error(`Unsupported Language ${lang}` )
+
+//       let runCmd = config.run
+// }
