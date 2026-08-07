@@ -1,6 +1,7 @@
 # dependencies (bun install)
 node_modules
 packages/db/src/generated
+apps/worker/src/executor/code/
 
 # output
 out

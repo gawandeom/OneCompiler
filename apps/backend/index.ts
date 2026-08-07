@@ -31,7 +31,7 @@ app.get("/health", async (req, res) => {
 });
 
 app.post("/execute", async (req, res) => {
-  const { code, lang } = req.body;
+  const { code, lang,input } = req.body;
 
   try {
     
@@ -41,13 +41,14 @@ app.post("/execute", async (req, res) => {
         code,
         lang,
         status: "processing",
-        output:""
+        output:"",
+        input
       },
     });
 
     
 
-    await client.lPush("problems", JSON.stringify({id:response.id ,code, lang }));
+    await client.lPush("problems", JSON.stringify({id:response.id ,code, lang ,input}));
     res.status(200).json({submissionId:response.id} );
   } catch (error) {
     console.log("Error in executing code", error);
