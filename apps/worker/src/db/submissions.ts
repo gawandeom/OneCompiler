@@ -13,7 +13,7 @@ type dbResponse = {
   const dbRes = await prisma.submission.update({
     where: { id },
     data: {
-      status: data.success ? "sucess" : "failure",
+      status: data.success ? "success" : "failure",
       error: data.success ? "" : data.error,
       output: data.output,
     },

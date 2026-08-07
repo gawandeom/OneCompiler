@@ -9,9 +9,9 @@ async function workerLoop() {
     const response = await client.blPop("problems", 0);
     if (!response) continue;
 
-    const { id, code, lang } = JSON.parse(response.element);
+    const { id, code, lang , input} = JSON.parse(response.element);
     try {
-      const data = await runCode(code, lang, id);
+      const data = await runCode(code, lang, id,input);
       await dbFunction(id, data as any);
     } catch (err) {
       console.error(`Job ${id} failed:`, err);

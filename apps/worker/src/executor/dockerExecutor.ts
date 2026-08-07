@@ -6,7 +6,7 @@ import { LANG_CONFIG } from "../config/languages";
 
 const workerDir = path.dirname(fileURLToPath(import.meta.url));
 
-const runCode = (code: string, lang: keyof typeof LANG_CONFIG, id: string) => {
+const runCode = (code: string, lang: keyof typeof LANG_CONFIG, id: string,input: string) => {
   return new Promise((resolvePromise) => {
     let config = LANG_CONFIG[lang];
     console.log(config)
@@ -55,6 +55,7 @@ containerCmd = ["bash", "-c", config.run_cmd(config.file)];    }
       `${jobDir}:/app`, // mount the WHOLE code folder, not just one file
       "-w",
         "/app",
+        "-i",
       config.image, // e.g. python:3.11-slim
       ...containerCmd
     ];
@@ -78,6 +79,9 @@ containerCmd = ["bash", "-c", config.run_cmd(config.file)];    }
         error: error.message,
       });
     });
+
+    CompilerResponse.stdin.write(input);
+    CompilerResponse.stdin.end();
 
     const timeout = setTimeout(() => {
       CompilerResponse.kill("SIGKILL");
