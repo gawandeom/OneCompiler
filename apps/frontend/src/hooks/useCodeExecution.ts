@@ -6,7 +6,7 @@ export default function useCodeExecution (){
   const [output, setOutput] = useState("");
   const [isRunning, setIsRunning] = useState(false);
 
-  const runCode = useCallback(async (code:string,language:string) => {
+  const runCode = useCallback(async (code:string,language:string,input:string) => {
     setIsRunning(true);
     setOutput("Processing");
 
@@ -14,6 +14,7 @@ export default function useCodeExecution (){
       const response = await axios.post("http://localhost:5000/execute", {
         code,
         lang:language,
+        input
       });
       setSubmissionId(response.data.submissionId);
     } catch (error) {
@@ -44,7 +45,7 @@ export default function useCodeExecution (){
       timeoutId = setTimeout(poll, 1000);
     }
     else{
-      setOutput(status === "sucess"? output : error)
+      setOutput(status === "success"? output : error)
       setIsRunning(false)
     }
       
