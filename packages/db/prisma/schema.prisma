@@ -14,10 +14,11 @@ model Submission {
   status Status @default(processing)
   output String @default("")
   error  String?
+  input String? @default("")
 }
 
 enum Status {
   processing
   failure
-  sucess
+  success
 }

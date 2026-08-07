@@ -5,7 +5,7 @@
 
 */
 -- CreateEnum
-CREATE TYPE "Status" AS ENUM ('processing', 'failure', 'sucess');
+CREATE TYPE "Status" AS ENUM ('processing', 'failure', 'success');
 
 -- DropTable
 DROP TABLE "User";
