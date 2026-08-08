@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "nodemon --exec tsx index.ts",
-    "test":"tsx test-push.ts"
+    "test": "tsx test-push.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",
@@ -22,10 +22,12 @@
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
+    "bullmq": "^6.0.9",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "ioredis": "^6.0.0",
     "redis": "^6.1.0"
   }
 }

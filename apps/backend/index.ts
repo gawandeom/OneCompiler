@@ -2,14 +2,29 @@ import express, { urlencoded } from "express";
 import "dotenv/config";
 import { prisma } from "@onecompiler/db";
 import cookieParser from "cookie-parser";
-import { createClient } from "redis";
 import cors from "cors";
-
+import { Queue } from 'bullmq';
+import IORedis from "ioredis";
 const app = express();
 
-const client = createClient();
 
-client.on("error", (err) => console.log("Redis Client Error", err));
+
+const connection = new IORedis("redis://localhost:6379");
+
+connection.on("error", (err) => {
+  console.log("Redis Client Error", err);
+});
+
+const queueName = process.env.QUEUE_NAME;
+
+if (!queueName) {
+  throw new Error("QUEUE_NAME must be set");
+}
+
+const Problems_Queue = new Queue(queueName, { connection });
+
+
+
 
 app.use(
   express.json({
@@ -46,9 +61,11 @@ app.post("/execute", async (req, res) => {
       },
     });
 
-    
-
-    await client.lPush("problems", JSON.stringify({id:response.id ,code, lang ,input}));
+     await Problems_Queue.add(
+       "execute",
+       { submissionId: response.id, code, lang, input },
+       { attempts: 3, backoff: { type: "exponential", delay: 1_000 } },
+     );
     res.status(200).json({submissionId:response.id} );
   } catch (error) {
     console.log("Error in executing code", error);
@@ -77,8 +94,9 @@ async function startServer() {
   try {
     const PORT = process.env.PORT || 5000;
 
-    await client.connect();
-    console.log("Connected to Redis");
+    connection.on("connect",()=>{
+      console.log("connected to redis")
+    })
 
     app.listen(Number(PORT), () => {
       console.log(`server is runing on port: ${PORT}`);

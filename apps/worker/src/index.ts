@@ -1,10 +1,6 @@
-import client, { CONCURRENCY } from "./queue/redisClient";
-import workerLoop from "./queue/workerLoop";
+import { connection } from "./queue/redisClient";
+import "./queue/workerLoop.js";
 
-async function startWorker() {
-  await client.connect();
-  console.log("Worker connected to Redis");
-  await Promise.all(Array.from({ length: CONCURRENCY }, workerLoop));
-}
-
-startWorker();
+connection.on("connect",()=>{
+  console.log("connected to redis")
+})

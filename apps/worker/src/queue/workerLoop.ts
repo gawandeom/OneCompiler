@@ -1,33 +1,38 @@
+import "dotenv/config";
+
 import dbFunction from "../db/submissions.js";
 import runCode from "../executor/dockerExecutor.js";
-import client from "./redisClient.js";
+import  {  CONCURRENCY, connection } from "./redisClient.js";
+import {Worker, Job } from "bullmq";
 
+const queueName = process.env.QUEUE_NAME;
 
-
-async function workerLoop() {
-  while (true) {
-    const response = await client.blPop("problems", 0);
-    if (!response) continue;
-
-    const { id, code, lang , input} = JSON.parse(response.element);
-    try {
-      const data = await runCode(code, lang, id,input);
-      await dbFunction(id, data as any);
-    } catch (err) {
-      console.error(`Job ${id} failed:`, err);
-
-      try {
-        await dbFunction(id, {
-          success: false,
-          error: err instanceof Error ? err.message : String(err),
-          output: "",
-        });
-      } catch (error) {
-        console.error(`Job ${id} failed TO Save in DB :`, err);
-      }
-    }
-  }
+if (!queueName) {
+  throw new Error("QUEUE_NAME must be set");
 }
 
+const worker = new Worker(queueName,
+ async (job:Job)=>{
 
-export default workerLoop
+  const { submissionId, code, lang, input } = job.data;
+  if (typeof submissionId !== "string") {
+    throw new Error("Job is missing a submission ID");
+  }
+
+  let data;
+
+  try {
+    data = await runCode(code, lang, submissionId, input);
+  } catch (error) {
+    console.error(`Job ${job.id} failed:`, error);
+    await dbFunction(submissionId, {
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+      output: "",
+    });
+    return;
+  }
+
+  await dbFunction(submissionId, data as any);
+},{connection,concurrency:CONCURRENCY}
+)

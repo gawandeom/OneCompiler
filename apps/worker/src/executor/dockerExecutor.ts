@@ -6,7 +6,7 @@ import { LANG_CONFIG } from "../config/languages";
 
 const workerDir = path.dirname(fileURLToPath(import.meta.url));
 
-const runCode = (code: string, lang: keyof typeof LANG_CONFIG, id: string,input: string) => {
+const runCode = (code: string, lang: keyof typeof LANG_CONFIG, id: string, input: string) => {
   return new Promise((resolvePromise) => {
     let config = LANG_CONFIG[lang];
     console.log(config)

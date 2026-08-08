@@ -1,10 +1,13 @@
-import { createClient } from "redis";
+import IORedis from "ioredis"
 
-const client = createClient();
-
-client.on("error", (err) => {
-  console.log("Redis connection error");
-});
 
 export const CONCURRENCY = 5;
-export default client
+
+
+
+
+export const connection = new IORedis({maxRetriesPerRequest: null});
+
+connection.on("error", (err) => {
+  console.log("Redis Client Error", err);
+});

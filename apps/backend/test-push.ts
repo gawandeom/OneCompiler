@@ -1,14 +1,20 @@
-// test-push.ts
-import { createClient } from "redis";
-import { randomUUID } from "node:crypto";
+import "dotenv/config";
+import { Queue } from "bullmq";
+import IORedis from "ioredis";
 import { prisma } from "@onecompiler/db";
 
-const client = createClient();
+const queueName = process.env.QUEUE_NAME;
+
+if (!queueName) {
+  throw new Error("QUEUE_NAME must be set");
+}
+
+const connection = new IORedis("redis://localhost:6379", {
+  maxRetriesPerRequest: null,
+});
+const queue = new Queue(queueName, { connection });
 
 async function main() {
-  await client.connect();
-  setTimeout(()=>{},2000)
-
   const jobs = [
     {lang: "js", code: `setTimeout(() => console.log("JOB A"), 2000)`,status:"processing" , output:"" },
     {lang: "js", code: `setTimeout(() => console.log("JOB B"), 2000)`,status:"processing" , output:"" },
@@ -19,13 +25,25 @@ async function main() {
   
 
     for (const job of jobs) {
-      // Prisma's generated types expect a specific Status enum; cast to any for this test helper
       const res = await prisma.submission.create({ data: job as any });
-      await client.rPush("problems", JSON.stringify({ id: res.id, code: job.code, lang: job.lang }));
+      await queue.add("execute", {
+        submissionId: res.id,
+        code: job.code,
+        lang: job.lang,
+        input: "",
+      });
       console.log(`Pushed ${res.id} -> expecting output containing "${job.code.split('"')[1]}"`);
   }
 
-   client.destroy();
+  await queue.close();
+  await connection.quit();
+  await prisma.$disconnect();
 }
 
-main();
+main().catch(async (error) => {
+  console.error(error);
+  await queue.close();
+  await connection.quit();
+  await prisma.$disconnect();
+  process.exitCode = 1;
+});
