@@ -1,15 +1,12 @@
 import { prisma } from "@onecompiler/db";
 
-
-
-
 type dbResponse = {
   success: boolean;
   error: string;
   output: string;
 };
 
- const dbFunction = async (id: string, data: dbResponse) => {
+const dbFunction = async (id: string, data: dbResponse) => {
   const dbRes = await prisma.submission.update({
     where: { id },
     data: {
@@ -20,5 +17,4 @@ type dbResponse = {
   });
 };
 
-
-export default dbFunction
+export default dbFunction;

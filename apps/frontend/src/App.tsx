@@ -5,13 +5,13 @@ import { Editor } from "@monaco-editor/react";
 import useTheme from "./hooks/useTheme";
 import useCodeExecution from "./hooks/useCodeExecution";
 
-type ExecutionLanguage = "js" | "py" | "cpp"|"java";
+type ExecutionLanguage = "js" | "py" | "cpp" | "java";
 
 const monacoLanguageByExecutionLanguage: Record<ExecutionLanguage, string> = {
   js: "javascript",
   py: "python",
   cpp: "cpp",
-  java:"java"
+  java: "java",
 };
 
 export function App() {
@@ -51,13 +51,12 @@ export function App() {
         </div>
         <div className="flex-1 border border-border rounded-md m-5 h-5/6 ">
           <h1>{output}</h1>
-          <input 
-            className="border border-border rounded-md p-2" 
-            onChange={(e) => setInput(e.target.value)} 
-            type="text" 
-            placeholder="Enter input..." 
-            />
-            
+          <input
+            className="border border-border rounded-md p-2"
+            onChange={(e) => setInput(e.target.value)}
+            type="text"
+            placeholder="Enter input..."
+          />
         </div>
       </div>
     </div>

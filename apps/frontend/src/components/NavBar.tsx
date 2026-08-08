@@ -8,22 +8,25 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import jssvg from "../../styles/javascript-logo-svgrepo-com.svg"
-import pysvg from "../../styles/python-logo-svgrepo-com.svg"
-import cppsvg from "../../styles/cpp-logo-svgrepo-com.svg"
-
-
+import jssvg from "../../styles/javascript-logo-svgrepo-com.svg";
+import pysvg from "../../styles/python-logo-svgrepo-com.svg";
+import cppsvg from "../../styles/cpp-logo-svgrepo-com.svg";
 
 type NavBarProps = {
-  
   theme: "light" | "dark";
   onToggleTheme: () => void;
-  language: "js" | "py" | "cpp"|"java";
-  onLanguageChange: (language: "js" | "py" | "cpp"|"java") => void;
+  language: "js" | "py" | "cpp" | "java";
+  onLanguageChange: (language: "js" | "py" | "cpp" | "java") => void;
   onRun: () => void;
 };
 
-function NavBar({ theme, onToggleTheme, language, onLanguageChange, onRun }: NavBarProps) {
+function NavBar({
+  theme,
+  onToggleTheme,
+  language,
+  onLanguageChange,
+  onRun,
+}: NavBarProps) {
   return (
     <div className="flex h-20 w-full items-center justify-between border-b border-border bg-background/95 px-6">
       <div>
@@ -32,7 +35,6 @@ function NavBar({ theme, onToggleTheme, language, onLanguageChange, onRun }: Nav
       <div className="flex gap-3">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-
             <Button variant={"outline"}>{language}</Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-48">
@@ -41,7 +43,11 @@ function NavBar({ theme, onToggleTheme, language, onLanguageChange, onRun }: Nav
                 checked={language === "js"}
                 onCheckedChange={(checked) => checked && onLanguageChange("js")}
               >
-                <img src={jssvg} alt="JavaScript" className="inline h-4 w-4 mr-2" />
+                <img
+                  src={jssvg}
+                  alt="JavaScript"
+                  className="inline h-4 w-4 mr-2"
+                />
                 JavaScript
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
@@ -53,14 +59,18 @@ function NavBar({ theme, onToggleTheme, language, onLanguageChange, onRun }: Nav
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
                 checked={language === "cpp"}
-                onCheckedChange={(checked) => checked && onLanguageChange("cpp")}
+                onCheckedChange={(checked) =>
+                  checked && onLanguageChange("cpp")
+                }
               >
                 <img src={cppsvg} alt="C++" className="inline h-4 w-4 mr-2" />
                 C++
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
                 checked={language === "java"}
-                onCheckedChange={(checked) => checked && onLanguageChange("java")}
+                onCheckedChange={(checked) =>
+                  checked && onLanguageChange("java")
+                }
               >
                 <img src={cppsvg} alt="java" className="inline h-4 w-4 mr-2" />
                 Java
@@ -68,7 +78,7 @@ function NavBar({ theme, onToggleTheme, language, onLanguageChange, onRun }: Nav
             </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
-        
+
         <Button onClick={onRun}>Run</Button>
       </div>
       <div className="flex gap-3">
