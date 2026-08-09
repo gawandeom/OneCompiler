@@ -4,6 +4,7 @@ import NavBar from "./components/NavBar";
 import { Editor } from "@monaco-editor/react";
 import useTheme from "./hooks/useTheme";
 import useCodeExecution from "./hooks/useCodeExecution";
+import Xterm from "./components/Xterm";
 
 type ExecutionLanguage = "js" | "py" | "cpp" | "java";
 
@@ -57,6 +58,7 @@ export function App() {
             type="text"
             placeholder="Enter input..."
           />
+          <Xterm/>
         </div>
       </div>
     </div>
