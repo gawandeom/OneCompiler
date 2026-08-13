@@ -15,6 +15,8 @@ const monacoLanguageByExecutionLanguage: Record<ExecutionLanguage, string> = {
   java: "java",
 };
 
+
+
 export function App() {
   const { theme, toggleTheme } = useTheme();
   const [code, setCode] = useState("console.log('hello')");
@@ -58,7 +60,7 @@ export function App() {
             type="text"
             placeholder="Enter input..."
           />
-          <Xterm/>
+          <Xterm code={code} language={"cpp"} />
         </div>
       </div>
     </div>
