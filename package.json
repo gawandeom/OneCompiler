@@ -2,6 +2,7 @@
   "name": "test",
   "private": true,
   "scripts": {
+    "postinstall": "bun run db:generate",
     "build": "bun run db:generate && turbo run build",
     "dev": "bun run db:generate && turbo run dev",
     "lint": "turbo run lint",

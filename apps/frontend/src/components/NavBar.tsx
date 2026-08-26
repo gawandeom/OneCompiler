@@ -24,7 +24,7 @@ function NavBar({ theme, onToggleTheme, language, onLanguageChange, onRun, isRun
       <div className="flex items-center gap-2">
         <TerminalSquare className="h-6 w-6 text-primary" />
         <h1 className="font-semibold text-lg tracking-tight">
-          Gawande <span className="text-primary">Compiler</span>
+          CodeFordge <span className="text-primary">Compiler</span>
         </h1>
       </div>
 

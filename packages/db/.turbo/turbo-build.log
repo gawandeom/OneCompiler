@@ -1,0 +1,4 @@
+[6n[?9001h[?1004h[m]0;C:\Users\om gawande\.bun\bin\bun.exe[?25h[35m[2m$[m [1m[2mprisma generate --config prisma.config.ts
+[22m[?25l[2mLoaded Prisma config from prisma.config.ts.[4;1H[?25h[22m[2mPrisma schema loaded from prisma\schema.prisma.
+[?25l[22m
+✔ Generated [1mPrisma Client[22m (7.9.1)[2m to .\src\generated\prisma[22m in 274ms[9;1H[?25h[?9001l[?1004l

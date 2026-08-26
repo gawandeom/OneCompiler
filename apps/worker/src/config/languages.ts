@@ -1,4 +1,4 @@
-type LanguageKey = "js" | "py" | "cpp" | "java";
+type LanguageKey = "javascript" | "python" | "cpp" | "java";
 
 type LanguageConfig = {
   file: string;
@@ -9,14 +9,14 @@ type LanguageConfig = {
 };
 
 export const LANG_CONFIG: Record<LanguageKey, LanguageConfig> = {
-  js: {
+  javascript: {
     file: "a.js",
     fileExtension: "js",
     run_cmd: (file) => `node ${file}`,
-    image: "node:20-slim",
+    image: "node:22-bookworm",
   },
 
-  py: {
+  python: {
     file: "a.py",
     fileExtension: "py",
     run_cmd: (file) => `python3 ${file}`,

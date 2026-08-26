@@ -6,6 +6,7 @@
     ".": "./src/index.ts"
   },
   "scripts": {
+    "build": "prisma generate --config prisma.config.ts",
     "generate": "prisma generate --config prisma.config.ts",
     "migrate:dev": "prisma migrate dev --config prisma.config.ts",
     "migrate:deploy": "prisma migrate deploy --config prisma.config.ts",
