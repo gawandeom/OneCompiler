@@ -1,92 +1,80 @@
 import { Button } from "./ui/button";
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun, TerminalSquare, Play, Loader2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuGroup,
-  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import jssvg from "../../styles/javascript-logo-svgrepo-com.svg";
-import pysvg from "../../styles/python-logo-svgrepo-com.svg";
-import cppsvg from "../../styles/cpp-logo-svgrepo-com.svg";
+import { LANGUAGES, LANGUAGE_LIST, type ExecutionLanguage } from "@/lib/languages";
 
 type NavBarProps = {
   theme: "light" | "dark";
   onToggleTheme: () => void;
-  language: "js" | "py" | "cpp" | "java";
-  onLanguageChange: (language: "js" | "py" | "cpp" | "java") => void;
+  language: ExecutionLanguage;
+  onLanguageChange: (language: ExecutionLanguage) => void;
   onRun: () => void;
+  isRunning: boolean;
 };
 
-function NavBar({
-  theme,
-  onToggleTheme,
-  language,
-  onLanguageChange,
-  onRun,
-}: NavBarProps) {
+function NavBar({ theme, onToggleTheme, language, onLanguageChange, onRun, isRunning }: NavBarProps) {
   return (
-    <div className="flex h-20 w-full items-center justify-between border-b border-border bg-background/95 px-6">
-      <div>
-        <h1 className="font-semibold text-2xl">Gawande Compiler</h1>
+    <div className="flex h-16 w-full items-center justify-between border-b border-border bg-background/80 backdrop-blur px-6">
+      <div className="flex items-center gap-2">
+        <TerminalSquare className="h-6 w-6 text-primary" />
+        <h1 className="font-semibold text-lg tracking-tight">
+          Gawande <span className="text-primary">Compiler</span>
+        </h1>
       </div>
-      <div className="flex gap-3">
+
+      <div className="flex items-center gap-3">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant={"outline"}>{language}</Button>
+            <Button variant="outline" className="gap-2">
+              <img src={LANGUAGES[language].icon} alt={language} className="h-4 w-4" />
+              {LANGUAGES[language].label}
+            </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-48">
             <DropdownMenuGroup>
-              <DropdownMenuCheckboxItem
-                checked={language === "js"}
-                onCheckedChange={(checked) => checked && onLanguageChange("js")}
-              >
-                <img
-                  src={jssvg}
-                  alt="JavaScript"
-                  className="inline h-4 w-4 mr-2"
-                />
-                JavaScript
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={language === "py"}
-                onCheckedChange={(checked) => checked && onLanguageChange("py")}
-              >
-                <img src={pysvg} alt="Python" className="inline h-4 w-4 mr-2" />
-                Python
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={language === "cpp"}
-                onCheckedChange={(checked) =>
-                  checked && onLanguageChange("cpp")
-                }
-              >
-                <img src={cppsvg} alt="C++" className="inline h-4 w-4 mr-2" />
-                C++
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={language === "java"}
-                onCheckedChange={(checked) =>
-                  checked && onLanguageChange("java")
-                }
-              >
-                <img src={cppsvg} alt="java" className="inline h-4 w-4 mr-2" />
-                Java
-              </DropdownMenuCheckboxItem>
+              {LANGUAGE_LIST.map((key) => (
+                <DropdownMenuCheckboxItem
+                  key={key}
+                  checked={language === key}
+                  onCheckedChange={(checked) => checked && onLanguageChange(key)}
+                >
+                  <img src={LANGUAGES[key].icon} alt={key} className="inline h-4 w-4 mr-2" />
+                  {LANGUAGES[key].label}
+                </DropdownMenuCheckboxItem>
+              ))}
             </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <Button onClick={onRun}>Run</Button>
-      </div>
-      <div className="flex gap-3">
-        <Button variant="outline" onClick={onToggleTheme}>
-          {theme === "dark" ? <Sun /> : <Moon />}
-          {theme === "dark" ? "Light" : "Dark"}
+        <Button onClick={onRun} disabled={isRunning} className="gap-2">
+          {isRunning ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Running
+            </>
+          ) : (
+            <>
+              <Play className="h-4 w-4" />
+              Run
+              <kbd className="ml-1 hidden sm:inline text-[10px] font-mono bg-primary-foreground/20 rounded px-1.5 py-0.5">
+                Ctrl+Enter
+              </kbd>
+            </>
+          )}
         </Button>
-        <Button>Save</Button>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <Button variant="outline" size="icon" onClick={onToggleTheme} title={theme === "dark" ? "Switch to light" : "Switch to dark"}>
+          {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+        </Button>
+        <Button variant="outline">Save</Button>
         <Button>Login</Button>
       </div>
     </div>
